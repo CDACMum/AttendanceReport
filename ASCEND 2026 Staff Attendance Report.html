@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ASCEND 2026 Staff Attendance Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#eef2f7; --card:#ffffff; --ink:#0f1f33; --muted:#5f6f82; --rule:#e2e8f0; --soft:#f3f6fa;
+  --navy:#0e2742; --navy2:#173a5e; --accent:#2f7fd1;
+  --p:#14a06b; --p-soft:#dcf3e9; --s:#f0a020; --s-soft:#fdefd3; --a:#e04a4a; --a-soft:#fbe1e1; --none:#e4e9f0;
+  --shadow:0 1px 2px rgba(15,31,51,.05),0 6px 20px rgba(15,31,51,.06);
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1119; --card:#131c27; --ink:#e8eef5; --muted:#93a3b5; --rule:#243243; --soft:#1a2633;
+  --navy:#0a1d31; --navy2:#12304f; --accent:#6aaef0;
+  --p:#2fc487; --p-soft:#143628; --s:#f5b445; --s-soft:#3e2f12; --a:#f06a6a; --a-soft:#3d1c1c; --none:#253241;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  --bg:#0b1119; --card:#131c27; --ink:#e8eef5; --muted:#93a3b5; --rule:#243243; --soft:#1a2633;
+  --navy:#0a1d31; --navy2:#12304f; --accent:#6aaef0;
+  --p:#2fc487; --p-soft:#143628; --s:#f5b445; --s-soft:#3e2f12; --a:#f06a6a; --a-soft:#3d1c1c; --none:#253241;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+h2{font-size:18px;font-weight:700;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13px;margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow)}
+section{margin-top:22px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+
+/* HERO */
+.hero{background:radial-gradient(1200px 400px at 85% -10%,rgba(47,127,209,.35),transparent 60%),linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:40px 0 96px}
+.hero .eyebrow{color:#8fc3f5}
+.hero h1{font-size:40px;line-height:1.1;margin:10px 0 8px;font-weight:800;letter-spacing:-.02em}
+.hero .period{color:#b9cde3;margin:0;font-size:15px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) auto;gap:32px;align-items:center}
+.hero-stats{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+.hs{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 18px;min-width:120px}
+.hs b{display:block;font-size:24px;font-weight:700;line-height:1.2}
+.hs span{font-size:12.5px;color:#b9cde3}
+.gauge{position:relative;width:230px;height:230px}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.gauge .c b{font-size:56px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.gauge .c b small{font-size:24px;font-weight:600}
+.gauge .c span{font-size:13px;color:#b9cde3;margin-top:6px;max-width:150px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:-64px;position:relative}
+.kpi{padding:18px 20px 14px}
+.kpi .top{display:flex;align-items:center;gap:10px}
+.ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.ico svg{width:18px;height:18px}
+.kpi .lbl{font-size:13px;color:var(--muted);font-weight:600}
+.kpi .val{font-size:34px;font-weight:800;line-height:1.1;margin:12px 0 2px;letter-spacing:-.02em}
+.kpi .val small{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:0}
+.kpi .note{font-size:12.5px;color:var(--muted);margin:0}
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:4px}
+.delta.dn{background:var(--a-soft);color:var(--a)} .delta.up{background:var(--p-soft);color:var(--p)}
+.spark{height:38px;margin-top:10px}
+
+/* insights */
+.ins{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.insight{display:flex;gap:16px;align-items:flex-start}
+.insight .big{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em;min-width:74px;white-space:nowrap}
+.insight p{margin:0;font-size:14px}
+.insight p b{display:block;font-size:14.5px;margin-bottom:2px}
+
+.row2{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:16px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.chart{position:relative;height:300px}
+.chart.md{height:230px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
+.seg{display:inline-flex;background:var(--soft);border-radius:9px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut-wrap .chart{height:180px;width:180px;flex:none}
+.dl{list-style:none;margin:0;padding:0;font-size:13.5px;flex:1}
+.dl li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--rule)}
+.dl li:last-child{border-bottom:0}
+.dl li b{margin-left:auto;font-size:16px}
+.dl i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.dcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.dcenter b{font-size:28px;font-weight:800;line-height:1}
+.dcenter span{font-size:11.5px;color:var(--muted)}
+
+/* classroom rings */
+.rings{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.ring{display:flex;gap:14px;align-items:center}
+.ring .r{position:relative;width:96px;height:96px}
+.ring .r svg{transform:rotate(-90deg)}
+.ring .r b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.ring .t{font-size:13px;color:var(--muted)}
+.ring .t strong{display:block;color:var(--ink);font-size:15px}
+.miss{flex:1;min-width:260px;background:var(--a-soft);border-radius:12px;padding:14px 16px}
+.miss .eyebrow{color:var(--a);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--card);border-radius:20px;padding:3px 10px;font-size:12.5px;font-weight:500}
+
+/* people cards */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pc{border:1px solid var(--rule);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--card)}
+.pc .who{display:flex;gap:10px;align-items:center}
+.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.pc .nm{font-weight:700;font-size:14px;line-height:1.25}
+.pc .meta{font-size:12px;color:var(--muted)}
+.pc .pv{margin-left:auto;font-weight:800;font-size:20px}
+.strip{display:flex;gap:3px}
+.strip i{flex:1;height:8px;border-radius:3px}
+.pc .foot{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.P{background:var(--p)} .S{background:var(--s)} .A{background:var(--none)}
+.best{display:flex;flex-direction:column;gap:10px}
+.bp{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.bp:last-child{border-bottom:0}
+.bp .nm{font-weight:600;font-size:14px}
+.bp .meta{font-size:12px;color:var(--muted)}
+.bp .bar{margin-left:auto;width:90px;height:8px;background:var(--soft);border-radius:4px;overflow:hidden}
+.bp .bar div{height:100%;background:var(--p);border-radius:4px}
+.bp .v{font-weight:800;width:44px;text-align:right}
+
+/* heatmap */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+input[type=search]{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--rule);border-radius:9px;background:var(--card);color:var(--ink);min-width:220px}
+.tbl{overflow-x:auto}
+table.heat{border-collapse:separate;border-spacing:3px}
+.heat td,.heat th{padding:0}
+.heat td.nm{padding-right:14px;white-space:nowrap;font-size:13px;position:sticky;left:0;background:var(--card);z-index:1}
+.heat td.nm span{color:var(--muted);display:inline-block;width:24px;font-size:12px}
+.heat td.lc{font-size:11.5px;color:var(--muted);padding-right:8px}
+.heat td.pc2{font-size:12.5px;font-weight:700;text-align:right;padding-right:10px}
+.heat th{font-size:10.5px;color:var(--muted);font-weight:600;vertical-align:bottom}
+.heat th.v{writing-mode:vertical-rl;transform:rotate(180deg);height:62px;text-align:left;white-space:nowrap;padding-bottom:4px}
+.heat th.sticky{position:sticky;left:0;background:var(--card);z-index:2}
+.heat .colbar{height:34px;display:flex;align-items:flex-end;justify-content:center}
+.heat .colbar div{width:14px;border-radius:3px 3px 0 0;background:var(--accent);opacity:.75}
+.sq{width:18px;height:18px;border-radius:5px;display:block}
+.gap{width:10px}
+.lo{color:var(--a)} .mid{color:var(--s)} .hi{color:var(--p)}
+.heat tr:hover td.nm{color:var(--accent)}
+
+footer{margin:32px 0 48px;color:var(--muted);font-size:12.5px;line-height:1.7;border-top:1px solid var(--rule);padding-top:16px}
+
+@media (max-width:980px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.row2,.row3,.ins{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr}.gauge{margin:0 auto}}
+@media (max-width:520px){.wrap{padding:0 14px}.hero{padding:28px 0 84px}.hero h1{font-size:30px}.kpi .val{font-size:28px}.donut-wrap{flex-direction:column}.controls{flex-direction:column;align-items:stretch}.gauge{width:190px;height:190px}.gauge svg{width:190px;height:190px}.gauge .c b{font-size:46px}}
+@media print{
+  body{background:#fff}
+  .hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card,.kpi,.pc{break-inside:avoid;box-shadow:none}
+  .controls,.seg{display:none}
+  .heat td.nm,.heat th.sticky{position:static}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">C-DAC Mumbai &nbsp;/&nbsp; ASCEND 2026</div>
+      <h1>Staff Attendance Report</h1>
+      <p class="period" id="period"></p>
+      <div class="hero-stats" id="heroStats"></div>
+    </div>
+    <div class="gauge" id="gauge"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <section class="card">
+    <h2>Full attendance register</h2>
+    <p class="sub">Every staff member, every session. Hover a square for details.</p>
+    <div class="controls">
+      <div class="seg" id="fLoc" role="group" aria-label="Location"><button data-v="all" aria-pressed="true">All staff</button><button data-v="Kharghar">Kharghar</button><button data-v="Juhu">Juhu</button></div>
+      <div class="seg" id="fSort" role="group" aria-label="Sort"><button data-v="no" aria-pressed="true">By S.No</button><button data-v="pct">Lowest first</button><button data-v="pctd">Highest first</button></div>
+      <input type="search" id="q" placeholder="Search name or employee no" aria-label="Search name or employee number">
+    </div>
+    <div class="tbl"><table class="heat" id="heat"></table></div>
+    <div class="legend"><span><i class="P"></i>Present</span><span><i class="S"></i>Short (joined, below minimum time)</span><span><i class="A"></i>Absent</span><span>C1 and C2 are the classroom lectures on 5 and 19 Sep</span></div>
+  </section>
+
+  <section class="card">
+    <h2>At a glance</h2>
+    <p class="sub">The three things that need management attention.</p>
+    <div class="ins" id="ins"></div>
+  </section>
+
+  <section class="row2">
+    <div class="card">
+      <div class="head">
+        <div><h2>Online attendance trend</h2><p class="sub" id="trendSub"></p></div>
+        <div class="seg" id="tView" role="group" aria-label="Trend view"><button data-v="s" aria-pressed="true">Each session</button><button data-v="w">Weekly</button></div>
+      </div>
+      <div class="chart"><canvas id="cTrend" aria-label="Attendance trend chart"></canvas></div>
+      <div class="legend"><span><i class="P"></i>Present</span><span><i class="S"></i>Short</span><span><i class="A"></i>Absent</span><span><i style="background:var(--accent)"></i>Attendance %</span></div>
+    </div>
+    <div class="card">
+      <h2>Staff by attendance level</h2>
+      <p class="sub">Share of online sessions each person attended.</p>
+      <div class="donut-wrap">
+        <div class="chart"><canvas id="cDonut" aria-label="Donut chart of staff by attendance level"></canvas><div class="dcenter"><b id="dTot"></b><span>staff</span></div></div>
+        <ul class="dl" id="dLeg"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="row2">
+    <div class="card">
+      <h2>How attendance is spread</h2>
+      <p class="sub">Number of staff at each attendance level, online sessions.</p>
+      <div class="chart md"><canvas id="cHist" aria-label="Histogram of staff attendance percentages"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Kharghar vs Juhu</h2>
+      <p class="sub">Attendance rate by location.</p>
+      <div class="chart md"><canvas id="cLoc" aria-label="Bar chart comparing locations"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Classroom lectures</h2>
+    <p class="sub">In-person sessions from the classroom register.</p>
+    <div class="rings" id="rings"></div>
+  </section>
+
+  <section class="row2">
+    <div class="card">
+      <h2>Needs follow-up</h2>
+      <p class="sub">Present in fewer than half the online sessions. Bars show the last 10 sessions, oldest first.</p>
+      <div class="pgrid" id="watch"></div>
+    </div>
+    <div class="card">
+      <h2>Most regular</h2>
+      <p class="sub">Present in 90% or more of online sessions.</p>
+      <div class="best" id="best"></div>
+    </div>
+  </section>
+
+
+  <footer>
+    <b>How this was measured.</b> Online attendance comes from Zoom participant reports, matched to the staff list. A person counts as Present when their time in the session met the minimum set in the tracker; Short means they joined but left before that. Attendance % = sessions present divided by online sessions held. Classroom attendance is from the manual register. Source: Monthly Attendance ASCEND Staff Attendance workbook.
+  </footer>
+</main>
+
+<script>
+var DATA = {"dates":["2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-12","2026-09-16","2026-09-17","2026-09-21","2026-09-23","2026-09-24","2026-09-26","2026-09-28","2026-09-30","2026-10-03","2026-10-05","2026-10-06"],"people":[{"no":1,"name":"Mr Abhijeet Bapurao Wagh","emp":"346982","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","P","S","P","P","A","A","A","P","P","P","A","S","P","P","P","P"]},{"no":2,"name":"Mr Abhishek Fulchand Gade","emp":"348265","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","A","P","P","P","P","S","S","P","P","P","P","P","P","P","P","P"]},{"no":3,"name":"Mr Aditya Kansana","emp":"346280","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S","P","S","S"]},{"no":4,"name":"Mr Ajinkya Maruti Dhumal","emp":"347699","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","A","S","P","S","P","P","P","P","P","P","S","P"]},{"no":5,"name":"Mr Akshay Yogiraj Kirange","emp":"345543","loc":"Juhu","cls":["P","P"],"on":["P","P","P","S","P","P","P","S","S","P","P","P","A","P","P","P","P","P","S"]},{"no":6,"name":"Mr Aman Giri","emp":"345546","loc":"Juhu","cls":["P","P"],"on":["A","P","P","A","A","P","P","P","P","P","P","A","P","P","P","P","P","P","P"]},{"no":7,"name":"Mr Aniket Tanaji Jadhav","emp":"349176","loc":"Kharghar","cls":["P","P"],"on":["A","P","P","P","P","P","P","P","P","P","P","S","P","A","A","P","P","P","A"]},{"no":8,"name":"Mr Aniket Yadunath Takmare","emp":"345619","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S","P"]},{"no":9,"name":"Mr Anil Kumar Chaurasiya","emp":"344190","loc":"Juhu","cls":["A","A"],"on":["P","P","P","P","P","P","S","A","A","A","A","A","A","A","A","A","A","A","A"]},{"no":10,"name":"Ms Arati Krunal Kamdi","emp":"344809","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","P","P","P","S","P","A","P","S","P","P","P","P","A","P","P","P"]},{"no":11,"name":"Mr Ayush Saxena","emp":"350303","loc":"Juhu","cls":["A","P"],"on":["P","P","P","S","P","S","S","S","P","P","P","P","A","A","S","P","P","P","A"]},{"no":12,"name":"Mr Basant Chaudashi","emp":"346768","loc":"Juhu","cls":["P","A"],"on":["P","P","P","S","P","A","P","P","P","S","A","A","A","A","P","A","S","P","A"]},{"no":13,"name":"Ms Bhagyashree Anil Pawar","emp":"346214","loc":"Juhu","cls":["P","P"],"on":["P","P","P","A","P","P","A","P","P","P","P","P","S","P","P","P","P","P","P"]},{"no":14,"name":"Mr Debmalya Paul","emp":"346981","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S","P","P","P"]},{"no":15,"name":"Mr Dhiraj Pralhad Ingale","emp":"345475","loc":"Juhu","cls":["P","P"],"on":["P","P","P","A","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"]},{"no":16,"name":"Mr Gurunath Vilas Vadnere","emp":"345321","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","A","P","P","P","P","A","A","P","A","P","A","P","P","A","A","S"]},{"no":17,"name":"Mr Himanshu Nigam","emp":"346772","loc":"Juhu","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","A","P","P","A","P","A"]},{"no":18,"name":"Mr Himanshu Popat Katkar","emp":"348418","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","A","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S"]},{"no":19,"name":"Ms Janhavi Kunwar","emp":"347519","loc":"Juhu","cls":["P","P"],"on":["P","A","P","S","A","P","P","P","P","P","P","P","P","P","P","P","P","A","S"]},{"no":20,"name":"Ms Jidnyasa Sunil Bhoir","emp":"347833","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","S","P","A","A","A","A","P","A","A","A","A","A","A","A","P","S"]},{"no":21,"name":"Mr Kamal Kant","emp":"344538","loc":"Juhu","cls":["P","P"],"on":["P","P","P","A","P","P","P","P","P","P","P","P","P","P","P","P","S","P","P"]},{"no":22,"name":"Mr Kamran Salim Shaikh","emp":"345513","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","S","P","P","P","P","A","A","S","P","S","P","P","P","S"]},{"no":23,"name":"Mr Khushal Pareta","emp":"348858","loc":"Juhu","cls":["A","A"],"on":["P","S","S","A","S","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},{"no":24,"name":"Ms Neha Saini","emp":"344545","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"]},{"no":25,"name":"Mr Nihal Chhetri","emp":"346766","loc":"Juhu","cls":["P","A"],"on":["P","P","P","A","A","P","P","A","A","S","P","A","S","A","P","S","P","S","P"]},{"no":26,"name":"Mr Nirmal Dilip Jain","emp":"348081","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","S","P","P","P","P","P","A","A","S","A","A","A","A","A","A","A"]},{"no":27,"name":"Mr Onkar Ajit Pawar","emp":"348867","loc":"Juhu","cls":["P","A"],"on":["S","P","P","A","P","P","P","P","A","P","A","P","S","P","S","P","P","P","A"]},{"no":28,"name":"Mr Pranay Jagdish Patil","emp":"347654","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","P","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},{"no":29,"name":"Mr Prasad Rajkumar Kunte","emp":"347505","loc":"Juhu","cls":["A","A"],"on":["P","P","P","A","P","P","P","P","A","A","A","P","P","P","P","P","P","P","A"]},{"no":30,"name":"Dr Pravin Bhaskar Ramteke","emp":"344055","loc":"Kharghar","cls":["A","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","A","P","P","S","A","A","S"]},{"no":31,"name":"Mr Rahul Batham","emp":"348374","loc":"Juhu","cls":["P","A"],"on":["P","S","S","A","S","P","A","A","P","A","S","S","A","A","A","A","A","P","P"]},{"no":32,"name":"Mr Rahul Bhaskar Chaudhari","emp":"344993","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","S","P","P","P","A","S","A","S","P","P","A","S","P","P","P","P"]},{"no":33,"name":"Mr Rahul Gopal Patil","emp":"348417","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","P","P","P","A","P","P","P","S","P","P","P"]},{"no":34,"name":"Mr Rakesh Prabhakar Bhol","emp":"347177","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","S","A","P","P","P","P","P","P","S","S","P","P","P"]},{"no":35,"name":"Mr Rohan Rajendra Kalaskar","emp":"348222","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","S","A","A","P","P","P","P","P"]},{"no":36,"name":"Mr Roshan Bhopal Sharma","emp":"347175","loc":"Kharghar","cls":["A","A"],"on":["P","P","P","A","P","P","P","P","S","A","P","P","P","P","S","P","P","P","P"]},{"no":37,"name":"Mr Rushikesh Chhoturam Ghuge","emp":"348658","loc":"Juhu","cls":["P","P"],"on":["P","P","P","S","P","P","P","A","P","S","A","A","A","A","A","A","A","A","P"]},{"no":38,"name":"Mr Rushikesh Kalyan Doud","emp":"348866","loc":"Juhu","cls":["P","A"],"on":["A","P","P","A","P","P","P","A","P","P","P","P","P","P","P","S","A","P","P"]},{"no":39,"name":"Mr Sagar Chandrakant Jadhav","emp":"345583","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","S","S","P","P","P","P","P","S","P","P","S","S","P","S","S"]},{"no":40,"name":"Mr Sahil Santosh Karande","emp":"349696","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","A","P","P","P","P","P","A","P"]},{"no":41,"name":"Ms Sakshi Kishor Gaddamwar","emp":"347701","loc":"Kharghar","cls":["P","P"],"on":["A","P","P","P","P","P","P","P","P","S","S","A","A","P","P","P","P","P","P"]},{"no":42,"name":"Mr Samarth Gyanprakash Pandey","emp":"349884","loc":"Juhu","cls":["P","A"],"on":["P","P","P","A","P","P","A","A","A","A","P","P","P","P","A","A","S","P","S"]},{"no":43,"name":"Mr Sandesh Subhash Jadhav","emp":"348441","loc":"Kharghar","cls":["P","P"],"on":["P","P","A","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S"]},{"no":44,"name":"Ms Sanjyot Shrinivas Sawant","emp":"348448","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","A","A","P","P","P","P","P","P","A","P","P"]},{"no":45,"name":"Ms Shalaka Parab","emp":"344684","loc":"Juhu","cls":["A","A"],"on":["A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},{"no":46,"name":"Mr Shilbhushan Siddhartha Khanderao","emp":"346285","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","P","P","A","P","P","P","S","P","P","S","P"]},{"no":47,"name":"Mr Shivhar Ramkisan Admane","emp":"345540","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","S","P","P","A","P","P","P","P","P","S","S","P","P","P"]},{"no":48,"name":"Mr Shivraj Singh","emp":"349903","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","S","P"]},{"no":49,"name":"Ms Shrishti Singh","emp":"345257","loc":"Juhu","cls":["P","P"],"on":["S","P","P","A","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"]},{"no":50,"name":"Mr Shubham Sidharth Wadhave","emp":"346215","loc":"Juhu","cls":["P","A"],"on":["P","P","P","P","P","P","P","P","P","P","S","P","P","P","P","P","P","P","P"]},{"no":51,"name":"Mr Sneh Vilas Parab","emp":"347589","loc":"Juhu","cls":["P","A"],"on":["P","P","P","S","P","P","P","P","A","S","P","P","P","P","P","P","S","S","S"]},{"no":52,"name":"Mr Sudarshan Anil Sangale","emp":"348371","loc":"Juhu","cls":["P","A"],"on":["P","P","P","A","P","P","P","P","P","A","P","S","P","P","P","P","P","P","S"]},{"no":53,"name":"Mr Suraj Kumar Shankhwar","emp":"345520","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","P","P","A","P","P","P","P","P","A","P","P","P"]},{"no":54,"name":"Mr Sushant Ravindra Borkar","emp":"350304","loc":"Juhu","cls":["P","A"],"on":["P","P","P","P","P","P","P","A","A","P","P","P","A","P","S","P","P","S","P"]},{"no":55,"name":"Mr Suyash Santosh Suvare","emp":"347146","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","P","P","S","P","P","P","P","P","A","P","P","P","A","P","P"]},{"no":56,"name":"Mr Tanmay Mahendra Elinje","emp":"349778","loc":"Kharghar","cls":["P","P"],"on":["P","A","P","P","P","P","A","P","P","A","P","S","P","P","P","P","P","P","S"]},{"no":57,"name":"Ms Trupti Keshav Badhekar","emp":"344108","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","P","P","P","P","A","P","P","P","P","P","P","P","P","A","P","P"]},{"no":58,"name":"Mr Vaibhav Sunil Shinde","emp":"346905","loc":"Juhu","cls":["P","P"],"on":["P","P","P","A","P","P","P","P","P","P","P","P","P","P","P","S","S","P","P"]},{"no":59,"name":"Mr Vinay Vijay Jadhav","emp":"345598","loc":"Kharghar","cls":["P","P"],"on":["P","P","P","S","S","P","A","P","P","S","S","S","A","S","S","A","P","P","A"]},{"no":60,"name":"Mr Yogesh Suryakant Amle","emp":"346233","loc":"Kharghar","cls":["P","A"],"on":["P","P","P","P","A","P","A","P","P","P","S","A","P","P","P","A","S","A","A"]}]};
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function dt(iso){var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function fs(iso){var d=dt(iso);return d.getDate()+' '+MONTHS[d.getMonth()];}
+function fl(iso){var d=dt(iso);return WD[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function short(n){return n.replace(/^(Mr|Ms|Mrs|Dr)\.?\s+/,'');}
+function initials(n){var w=short(n).split(/\s+/);return (w[0][0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase();}
+function $(s){return document.querySelector(s);}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function sum(a){return a.reduce(function(x,y){return x+y;},0);}
+
+var D=DATA.dates, P=DATA.people, S=D.length, N=P.length;
+P.forEach(function(p){
+  p.P=p.on.filter(function(x){return x==='P';}).length; p.S=p.on.filter(function(x){return x==='S';}).length;
+  p.pct=Math.round(p.P*100/S); p.cP=p.cls.filter(function(x){return x==='P';}).length;
+  p.last=-1; p.on.forEach(function(x,i){if(x==='P')p.last=i;});
+});
+var perSess=D.map(function(_,i){var c={P:0,S:0,A:0};P.forEach(function(p){c[p.on[i]]++;});return c;});
+var totP=sum(P.map(function(p){return p.P;})), totS=sum(P.map(function(p){return p.S;}));
+var overall=totP*100/(N*S);
+var hi=P.filter(function(p){return p.P/S>=.75;}), mid=P.filter(function(p){return p.P/S>=.5&&p.P/S<.75;}), lo=P.filter(function(p){return p.P/S<.5;});
+var first3=(perSess[0].P+perSess[1].P+perSess[2].P)/3, last5=sum(perSess.slice(-5).map(function(c){return c.P;}))/5;
+var locs=['Kharghar','Juhu'].map(function(l){var g=P.filter(function(p){return p.loc===l;});return{l:l,n:g.length,pct:sum(g.map(function(p){return p.P;}))*100/(g.length*S),c:[0,1].map(function(i){return g.filter(function(p){return p.cls[i]==='P';}).length;})};});
+var cls=[0,1].map(function(i){return P.filter(function(p){return p.cls[i]==='P';}).length;});
+var bothA=P.filter(function(p){return p.cP===0;});
+var dropped=P.filter(function(p){return p.on.slice(0,9).filter(function(x){return x==='P';}).length>=4&&p.on.slice(9).filter(function(x){return x==='P';}).length<=2;});
+var cDates=['5 Sep','19 Sep'];
+
+/* weekly buckets (ISO-ish weeks starting Monday) */
+var weeks=[];D.forEach(function(d,i){var x=dt(d),m=new Date(x);m.setDate(x.getDate()-((x.getDay()+6)%7));var k=m.toDateString();var w=weeks[weeks.length-1];if(!w||w.k!==k){w={k:k,start:m,idx:[]};weeks.push(w);}w.idx.push(i);});
+
+/* HERO */
+$('#period').textContent=fl(D[0])+' to '+fl(D[S-1])+' '+dt(D[S-1]).getFullYear()+'  |  '+S+' online sessions, 2 classroom lectures';
+$('#heroStats').innerHTML=[[N,'staff enrolled'],[S+2,'sessions held'],[Math.round(totP/S),'avg present / session'],['2','locations']].map(function(h){return '<div class="hs"><b>'+h[0]+'</b><span>'+h[1]+'</span></div>';}).join('');
+(function(){var r=96,c=2*Math.PI*r,v=overall/100;
+$('#gauge').innerHTML='<svg width="230" height="230" viewBox="0 0 230 230" aria-hidden="true"><circle cx="115" cy="115" r="'+r+'" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="18"/><circle cx="115" cy="115" r="'+r+'" fill="none" stroke="url(#gg)" stroke-width="18" stroke-linecap="round" stroke-dasharray="'+(c*v)+' '+c+'"/><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fe0a8"/><stop offset="1" stop-color="#2fa8f0"/></linearGradient></defs></svg><div class="c"><b>'+Math.round(overall)+'<small>%</small></b><span>overall online attendance</span></div>';})();
+
+/* KPIs */
+var IC={
+ trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
+ ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+ warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>',
+ room:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/></svg>'
+};
+var dropPct=Math.round((last5-first3)/first3*100);
+$('#kpis').innerHTML=[
+  {ic:'trend',col:'var(--accent)',bg:'rgba(47,127,209,.12)',lbl:'Present per session',val:Math.round(last5)+'<small> of '+N+'</small><span class="delta dn">'+dropPct+'%</span>',note:'Last 5 sessions, down from '+Math.round(first3)+' in week 1',spark:true},
+  {ic:'ok',col:'var(--p)',bg:'var(--p-soft)',lbl:'Meeting the 75% mark',val:hi.length+'<small> of '+N+'</small>',note:Math.round(hi.length*100/N)+'% of staff attend 3 in 4 sessions or more'},
+  {ic:'warn',col:'var(--a)',bg:'var(--a-soft)',lbl:'Below 50% attendance',val:lo.length+'<small> staff</small>',note:dropped.length+' of them stopped attending mid-course'},
+  {ic:'room',col:'var(--s)',bg:'var(--s-soft)',lbl:'Classroom turnout',val:cls[1]+'<small> of '+N+'</small><span class="delta dn">'+(cls[1]-cls[0])+'</span>',note:'19 Sep lecture, compared with '+cls[0]+' on 5 Sep'}
+].map(function(k,i){return '<div class="card kpi"><div class="top"><div class="ico" style="background:'+k.bg+';color:'+k.col+'">'+IC[k.ic]+'</div><span class="lbl">'+k.lbl+'</span></div><div class="val">'+k.val+'</div><p class="note">'+k.note+'</p>'+(k.spark?'<div class="spark"><canvas id="spark"></canvas></div>':'')+'</div>';}).join('');
+
+/* Insights */
+var hiLoc=locs[0].pct>=locs[1].pct?locs[0]:locs[1], loLoc=hiLoc===locs[0]?locs[1]:locs[0];
+$('#ins').innerHTML=[
+  ['var(--a)',Math.round(first3-last5),'Fewer staff per online session','Attendance fell from about '+Math.round(first3)+' in the first week to '+Math.round(last5)+' across the last five sessions.'],
+  ['var(--s)',(Math.round(hiLoc.pct)-Math.round(loLoc.pct))+'<small style="font-size:16px"> pts</small>',''+loLoc.l+' trails '+hiLoc.l,loLoc.l+' staff attend '+Math.round(loLoc.pct)+'% of online sessions against '+Math.round(hiLoc.pct)+'% at '+hiLoc.l+'.'],
+  ['var(--a)',bothA.length,'Missed both classroom lectures','Classroom turnout dropped from '+cls[0]+' to '+cls[1]+'. '+Math.round(totS*100/(N*S))+'% of online attendances were also cut short.']
+].map(function(x){return '<div class="insight"><div class="big" style="color:'+x[0]+'">'+x[1]+'</div><p><b>'+x[2]+'</b>'+x[3]+'</p></div>';}).join('');
+
+/* Classroom rings */
+function ring(v,max,col){var r=40,c=2*Math.PI*r;return '<svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="'+r+'" fill="none" stroke="'+cssv('--soft')+'" stroke-width="10"/><circle cx="48" cy="48" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(c*v/max)+' '+c+'"/></svg>';}
+function renderRings(){
+$('#rings').innerHTML=[0,1].map(function(i){var col=i?cssv('--s'):cssv('--p');return '<div class="ring"><div class="r">'+ring(cls[i],N,col)+'<b>'+Math.round(cls[i]*100/N)+'%</b></div><div class="t"><strong>'+cls[i]+' of '+N+' present</strong>Lecture, '+cDates[i]+'<br>'+locs.map(function(l){return l.l+' '+l.c[i]+'/'+l.n;}).join(', ')+'</div></div>';}).join('')+
+ '<div class="miss"><div class="eyebrow">Missed both lectures ('+bothA.length+')</div><div class="chips">'+bothA.map(function(p){return '<span class="chip">'+esc(short(p.name))+'</span>';}).join('')+'</div></div>';
+}
+
+/* Watch + best */
+function avColor(p){return p<25?['var(--a-soft)','var(--a)']:['var(--s-soft)','var(--s)'];}
+$('#watch').innerHTML=lo.slice().sort(function(a,b){return a.P-b.P;}).map(function(p){var c=avColor(p.pct);
+  return '<div class="pc"><div class="who"><div class="av" style="background:'+c[0]+';color:'+c[1]+'">'+initials(p.name)+'</div><div><div class="nm">'+esc(short(p.name))+'</div><div class="meta">'+p.emp+' | '+p.loc+'</div></div><div class="pv lo">'+p.pct+'%</div></div>'+
+  '<div class="strip">'+p.on.slice(-10).map(function(x){return '<i class="'+x+'"></i>';}).join('')+'</div>'+
+  '<div class="foot"><span>Class '+p.cP+'/2</span><span>'+(p.last<0?'Never present':'Last present '+fs(D[p.last]))+'</span></div></div>';}).join('');
+$('#best').innerHTML=P.filter(function(p){return p.P/S>=.9;}).sort(function(a,b){return b.P-a.P;}).map(function(p){
+  return '<div class="bp"><div class="av" style="background:var(--p-soft);color:var(--p)">'+initials(p.name)+'</div><div><div class="nm">'+esc(short(p.name))+'</div><div class="meta">'+p.loc+' | Class '+p.cP+'/2</div></div><div class="bar"><div style="width:'+p.pct+'%"></div></div><div class="v hi">'+p.pct+'%</div></div>';}).join('');
+
+/* Heatmap */
+var fLoc='all',fSort='no';
+function cls3(v){return v>=75?'hi':v>=50?'mid':'lo';}
+function renderHeat(){
+  var q=$('#q').value.trim().toLowerCase();
+  var rows=P.filter(function(p){return (fLoc==='all'||p.loc===fLoc)&&(!q||p.name.toLowerCase().indexOf(q)>=0||p.emp.indexOf(q)>=0);});
+  rows.sort(function(a,b){return fSort==='pct'?a.P-b.P||a.no-b.no:fSort==='pctd'?b.P-a.P||a.no-b.no:a.no-b.no;});
+  var h='<thead><tr><th class="sticky"></th><th></th><th></th>'+perSess.map(function(c){return '<th><div class="colbar" title="'+c.P+' present"><div style="height:'+(c.P/N*34)+'px"></div></div></th>';}).join('')+'<th></th>'+cls.map(function(c){return '<th><div class="colbar" title="'+c+' present"><div style="height:'+(c/N*34)+'px;background:var(--s)"></div></div></th>';}).join('')+'</tr>';
+  h+='<tr><th class="sticky"></th><th></th><th style="text-align:right;padding-right:10px">%</th>'+D.map(function(d){return '<th class="v">'+fs(d)+'</th>';}).join('')+'<th class="gap"></th><th class="v">C1 5 Sep</th><th class="v">C2 19 Sep</th></tr></thead><tbody>';
+  rows.forEach(function(p){
+    h+='<tr><td class="nm"><span>'+p.no+'</span>'+esc(short(p.name))+'</td><td class="lc">'+p.loc+'</td><td class="pc2 '+cls3(p.pct)+'">'+p.pct+'%</td>'+
+    p.on.map(function(x,i){return '<td><i class="sq '+x+'" title="'+esc(short(p.name))+', '+fl(D[i])+': '+({P:'Present',S:'Short',A:'Absent'})[x]+'"></i></td>';}).join('')+
+    '<td class="gap"></td>'+p.cls.map(function(x,i){return '<td><i class="sq '+x+'" title="Classroom '+cDates[i]+': '+(x==='P'?'Present':'Absent')+'"></i></td>';}).join('')+'</tr>';
+  });
+  if(!rows.length)h+='<tr><td colspan="'+(S+6)+'" style="padding:20px;color:var(--muted)">No staff match this search.</td></tr>';
+  $('#heat').innerHTML=h+'</tbody>';
+}
+function seg(id,cb){var el=$(id);el.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});cb(b.dataset.v);});}
+seg('#fLoc',function(v){fLoc=v;renderHeat();});
+seg('#fSort',function(v){fSort=v;renderHeat();});
+$('#q').addEventListener('input',renderHeat);
+renderHeat();
+
+/* Charts */
+var charts={}, tView='s';
+seg('#tView',function(v){tView=v;drawTrend();});
+function base(){return{family:'Plus Jakarta Sans',size:11};}
+function drawTrend(){
+  if(charts.t)charts.t.destroy();
+  var labels,pres,sh,ab,pct,titles;
+  if(tView==='w'){
+    labels=weeks.map(function(w){return 'Wk of '+w.start.getDate()+' '+MONTHS[w.start.getMonth()];});
+    var avgOf=function(k){return weeks.map(function(w){return +(sum(w.idx.map(function(i){return perSess[i][k];}))/w.idx.length).toFixed(1);});};
+    pres=avgOf('P');sh=avgOf('S');ab=avgOf('A');titles=weeks.map(function(w){return w.idx.length+' session'+(w.idx.length>1?'s':'')+', average per session';});
+    $('#trendSub').textContent='Average staff per session, by week.';
+  } else {
+    labels=D.map(fs);pres=perSess.map(function(c){return c.P;});sh=perSess.map(function(c){return c.S;});ab=perSess.map(function(c){return c.A;});titles=D.map(fl);
+    $('#trendSub').textContent='Staff present, short and absent in each of the '+S+' sessions.';
+  }
+  pct=pres.map(function(v){return +(v*100/N).toFixed(1);});
+  charts.t=new Chart($('#cTrend'),{
+    data:{labels:labels,datasets:[
+      {type:'line',label:'Attendance %',data:pct,yAxisID:'y1',borderColor:cssv('--accent'),backgroundColor:cssv('--accent'),borderWidth:2.5,pointRadius:3,pointHoverRadius:5,tension:.35,order:0},
+      {type:'bar',label:'Present',data:pres,backgroundColor:cssv('--p'),stack:'s',borderRadius:4,order:1,maxBarThickness:34},
+      {type:'bar',label:'Short',data:sh,backgroundColor:cssv('--s'),stack:'s',borderRadius:4,order:1,maxBarThickness:34},
+      {type:'bar',label:'Absent',data:ab,backgroundColor:cssv('--none'),stack:'s',borderRadius:4,order:1,maxBarThickness:34}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:function(it){return labels[it[0].dataIndex]+(tView==='w'?'':'');},afterTitle:function(it){return titles[it[0].dataIndex];},label:function(c){return ' '+c.dataset.label+': '+c.parsed.y+(c.dataset.yAxisID==='y1'?'%':'');}}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:cssv('--muted'),font:base(),maxRotation:50,minRotation:tView==='w'?0:40}},
+        y:{stacked:true,max:N,ticks:{color:cssv('--muted'),font:base(),stepSize:15},grid:{color:cssv('--rule')},title:{display:true,text:'Staff',color:cssv('--muted'),font:base()}},
+        y1:{position:'right',min:0,max:100,grid:{display:false},ticks:{color:cssv('--accent'),font:base(),callback:function(v){return v+'%';}}}}}
+  });
+}
+function drawAll(){
+  if(typeof Chart==='undefined'){document.querySelectorAll('canvas').forEach(function(c){c.parentNode.innerHTML='<p class="sub">Chart could not load. The register below has the same data.</p>';});renderRings();return;}
+  Chart.defaults.font.family='Plus Jakarta Sans';
+  drawTrend();
+  ['d','h','l','sp'].forEach(function(k){if(charts[k])charts[k].destroy();});
+  charts.d=new Chart($('#cDonut'),{type:'doughnut',data:{labels:['75% or more','50 to 74%','Below 50%'],datasets:[{data:[hi.length,mid.length,lo.length],backgroundColor:[cssv('--p'),cssv('--s'),cssv('--a')],borderColor:cssv('--card'),borderWidth:3,hoverOffset:6}]},options:{cutout:'70%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  $('#dTot').textContent=N;
+  $('#dLeg').innerHTML=[['--p','75% or more',hi.length,'on track'],['--s','50 to 74%',mid.length,'irregular'],['--a','Below 50%',lo.length,'needs follow-up']].map(function(x){return '<li><i style="background:var('+x[0]+')"></i><span>'+x[1]+'<br><small style="color:var(--muted)">'+x[3]+'</small></span><b>'+x[2]+'</b></li>';}).join('');
+  var bins=['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'],cnt=bins.map(function(){return 0;});
+  P.forEach(function(p){cnt[Math.min(9,Math.floor(p.P*100/S/10))]++;});
+  charts.h=new Chart($('#cHist'),{type:'bar',data:{labels:bins.map(function(b){return b+'%';}),datasets:[{data:cnt,backgroundColor:bins.map(function(_,i){return i>=7?cssv('--p'):i>=5?cssv('--s'):cssv('--a');}),borderRadius:6,maxBarThickness:44}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.y+' staff';}}}},scales:{x:{grid:{display:false},ticks:{color:cssv('--muted'),font:base()},title:{display:true,text:'Online attendance',color:cssv('--muted'),font:base()}},y:{ticks:{color:cssv('--muted'),font:base(),stepSize:5},grid:{color:cssv('--rule')},title:{display:true,text:'Staff',color:cssv('--muted'),font:base()}}}}});
+  charts.l=new Chart($('#cLoc'),{type:'bar',data:{labels:['Online','Class 5 Sep','Class 19 Sep'],datasets:locs.map(function(l,i){return{label:l.l+' ('+l.n+')',data:[+l.pct.toFixed(1),+(l.c[0]*100/l.n).toFixed(1),+(l.c[1]*100/l.n).toFixed(1)],backgroundColor:i?cssv('--s'):cssv('--accent'),borderRadius:6,maxBarThickness:30};})},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:cssv('--muted'),font:base(),boxWidth:10,boxHeight:10,useBorderRadius:true,borderRadius:3}},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+Math.round(c.parsed.y)+'%';}}}},scales:{x:{grid:{display:false},ticks:{color:cssv('--muted'),font:base()}},y:{min:0,max:100,ticks:{color:cssv('--muted'),font:base(),callback:function(v){return v+'%';}},grid:{color:cssv('--rule')}}}}});
+  var sp=$('#spark'); if(sp){charts.sp=new Chart(sp,{type:'line',data:{labels:D.map(fs),datasets:[{data:perSess.map(function(c){return c.P;}),borderColor:cssv('--accent'),borderWidth:2,pointRadius:0,tension:.4,fill:true,backgroundColor:'rgba(47,127,209,.12)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false,min:20,max:N}}}});}
+  renderRings();
+}
+drawAll();
+if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',drawAll);}
+</script>
+</body>
+</html>

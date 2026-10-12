@@ -267,7 +267,7 @@ var LOC=['Kharghar','Juhu'].map(function(l){var g=P.filter(function(p){return p.
   full:g.filter(G[0].f).length,urg:g.filter(function(p){return p.cat;}).length};});
 
 /* ---------- summary ---------- */
-$('verdict').innerHTML='Zoom attendance is <mark class="g">recovering to '+wLast+'%</mark>, close to the 75% target, but classroom turnout is <mark>'+clsPct[2]+'%</mark> and <mark>'+urgent.length+' staff</mark> need a call this week.';
+
 $('asof').textContent=S+' Zoom sessions ('+fs(D[0])+' to '+fs(D[S-1])+') and 3 classroom lectures · '+N+' staff · updated '+AS_OF;
 function gap(v){var d=v-TARGET;return d>=0?'<span class="badge b-ok">On target</span>':'<span class="badge b-'+(v>=50?'warn':'bad')+'">'+(-d)+' pts below target</span>';}
 $('kpis').innerHTML=[
